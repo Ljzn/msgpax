@@ -145,8 +145,11 @@ defimpl Msgpax.Packer, for: Map do
   end
 
   def pack(map) do
-    [format(map) | map |> Map.to_list() |> pack([])]
+    [format(map) | map |> to_list() |> pack([])]
   end
+
+  defp to_list(list) when is_list(list), do: list
+  defp to_list(map) when is_map(map), do: Map.to_list(map)
 
   defp pack([{key, value} | rest], result) do
     pack(rest, [@protocol.pack(key), @protocol.pack(value) | result])
@@ -154,8 +157,11 @@ defimpl Msgpax.Packer, for: Map do
 
   defp pack([], result), do: result
 
+  defp size(list) when is_list(list), do: length(list)
+  defp size(map) when is_map(map), do: map_size(map)
+
   defp format(map) do
-    length = map_size(map)
+    length = size(map)
 
     cond do
       length < 16 -> 0b10000000 + length
@@ -167,6 +173,8 @@ defimpl Msgpax.Packer, for: Map do
 end
 
 defimpl Msgpax.Packer, for: List do
+  def pack([{_, _} | _] = list), do: @protocol.Map.pack(list)
+
   def pack(list) do
     [format(list) | list |> Enum.reverse() |> pack([])]
   end
