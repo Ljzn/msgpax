@@ -155,7 +155,7 @@ defimpl Msgpax.Packer, for: Map do
     pack(rest, [@protocol.pack(key), @protocol.pack(value) | result])
   end
 
-  defp pack([], result), do: result
+  defp pack([], result), do: result |> Enum.reverse()
 
   defp size(list) when is_list(list), do: length(list)
   defp size(map) when is_map(map), do: map_size(map)
